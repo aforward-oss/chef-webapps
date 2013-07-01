@@ -19,6 +19,12 @@
 node[:webapps][:git_projects].each do |data|
   app_dir = "#{node[:webapps][:install_dir]}/#{data[:name]}"
 
+  directory "#{node[:webapps][:install_dir]}/pids" do
+    recursive true
+    owner "#{node[:webapps][:user]}"
+    group "#{node[:webapps][:group]}"
+  end
+
   git "#{app_dir}" do
     repository "#{data[:git_url]}"
     user "#{node[:webapps][:user]}"
@@ -42,5 +48,18 @@ node[:webapps][:git_projects].each do |data|
       content "#{contents.join("\n")}"
     end
   end
+
+  if data[:monit]
+    template "#{node[:monit][:confd_dir]}/#{data[:name]}.conf" do
+      source "monit_process.conf.erb"
+      owner "root"
+      group "root"
+      mode 0700
+      variables( :name => data[:name], :pidfile => "#{node[:webapps][:install_dir]}/pids/#{data[:name]}.pid", :start => "#{app_dir}/bin/up", :stop => "#{app_dir}/bin/down" )
+      notifies :reload, resources(:service => "monit")
+      action :create
+    end
+  end
+
 
 end
