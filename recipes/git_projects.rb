@@ -19,10 +19,12 @@
 node[:webapps][:git_projects].each do |data|
   app_dir = "#{node[:webapps][:install_dir]}/#{data[:name]}"
 
-  directory "#{node[:webapps][:install_dir]}/pids" do
-    recursive true
-    owner "#{node[:webapps][:user]}"
-    group "#{node[:webapps][:group]}"
+  ["pids","logs"].each do |d|
+    directory "#{node[:webapps][:install_dir]}/#{d}" do
+      recursive true
+      owner "#{node[:webapps][:user]}"
+      group "#{node[:webapps][:group]}"
+    end
   end
 
   git "#{app_dir}" do
@@ -56,7 +58,7 @@ node[:webapps][:git_projects].each do |data|
       group "root"
       mode 0700
       variables( :name => data[:name], :pidfile => "#{node[:webapps][:install_dir]}/pids/#{data[:name]}.pid", :start => "#{app_dir}/bin/up", :stop => "#{app_dir}/bin/down" )
-      notifies :reload, resources(:service => "monit")
+      notifies :reload, resources(:service => "monit"), :delayed
       action :create
     end
   end

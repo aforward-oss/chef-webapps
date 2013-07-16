@@ -1,4 +1,4 @@
 check process <%= @name %> with pidfile <%= @pidfile %>
-   start program = "<%= @start %>"
-   stop  program = "<%= @stop %>"
+   start program = "<%= @start %>" with timeout 60 seconds
+   stop  program = "<%= @stop %>" with timeout 60 seconds
    if 5 restarts within 5 cycles then timeout
