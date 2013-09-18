@@ -16,6 +16,8 @@
 #   }
 # }
 
+
+
 node[:webapps][:git_projects].each do |data|
   app_dir = "#{node[:webapps][:install_dir]}/#{data[:name]}"
 
@@ -26,6 +28,12 @@ node[:webapps][:git_projects].each do |data|
       group "#{node[:webapps][:group]}"
     end
   end
+
+  execute "cleanup_owner" do
+    cwd "#{app_dir}"
+    command "chown -R #{node[:webapps][:user]}:#{node[:webapps][:group]} ."
+    only_if { File.exists?( app_dir ) }
+  end  
 
   git "#{app_dir}" do
     repository "#{data[:git_url]}"
