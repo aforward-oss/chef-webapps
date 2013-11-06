@@ -39,7 +39,7 @@ node[:webapps][:git_projects].each do |data|
     repository "#{data[:git_url]}"
     user "#{node[:webapps][:user]}"
     group "#{node[:webapps][:group]}"
-    action :sync
+    depth 1
   end
 
   data[:files].each do |filename,contents|
