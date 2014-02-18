@@ -40,6 +40,7 @@ node[:webapps][:git_projects].each do |data|
     user "#{node[:webapps][:user]}"
     group "#{node[:webapps][:group]}"
     depth 1
+    notifies :run, "execute[#{data[:name]}_restart]"
   end
 
   data[:files].each do |filename,contents|
@@ -68,6 +69,17 @@ node[:webapps][:git_projects].each do |data|
       variables( :name => data[:name], :pidfile => "#{node[:webapps][:install_dir]}/pids/#{data[:name]}.pid", :start => "#{app_dir}/bin/up", :stop => "#{app_dir}/bin/down" )
       notifies :reload, resources(:service => "monit"), :delayed
       action :create
+    end
+
+    execute "#{data[:name]}_restart" do
+      command "monit restart #{data[:name]}; sleep 2"
+      action :nothing
+    end
+
+  else
+    execute "#{data[:name]}_restart" do
+      command "echo NOT USING MONIT, CANNOT RESTART"
+      action :nothing
     end
   end
 
